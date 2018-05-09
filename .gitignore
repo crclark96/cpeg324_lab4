@@ -1,0 +1,9 @@
+*.o
+*.cf
+*.vcd
+*tb
+*.swp
+~$*
+sign_extend
+controller
+cpu
