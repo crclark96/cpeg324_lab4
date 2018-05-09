@@ -1,0 +1,4 @@
+how to print and have testbench read printout?
+
+how to skip instructions w/o PC?
+

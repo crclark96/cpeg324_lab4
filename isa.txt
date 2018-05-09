@@ -1,0 +1,35 @@
+Collin Reilly Clark
+Zachary Irons
+CPEG 324
+5 March 2018
+
+                                  ISA Specification
+
+Add:
+        add values stored in two source registers, and store in the
+        destination register
+        format: 01      00     00    00
+                opcode  dest   src1  src2
+
+Subtract:
+        subtract values stored in two source registers, and store in the
+        destination register
+        format: 00      00     00    00
+                opcode  dest   src1  src2
+                
+Display:
+        print the value stored in a register to the console
+        format: 111     00     000
+                opcode  src    empty
+
+Compare:
+        compare the values in two registers and skip the provided number
+        of instructions if they are the same
+        format: 110     00    00    0
+                opcode  src1  src2  offset (0->1 instruction,
+                                            1->2 instructions)
+Load:
+        load a four bit signed, twos complement immediate into a register
+        format: 10      00    0000
+                opcode  dest  immediate
+
