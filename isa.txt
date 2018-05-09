@@ -19,8 +19,8 @@ Subtract:
                 
 Display:
         print the value stored in a register to the console
-        format: 111     00     000
-                opcode  src    empty
+        format: 111     00     00	0
+                opcode  src    empty	must be '0'
 
 Compare:
         compare the values in two registers and skip the provided number
@@ -30,6 +30,11 @@ Compare:
                                             1->2 instructions)
 Load:
         load a four bit signed, twos complement immediate into a register
-        format: 10      00    0000
+	   format: 10      00    0000
                 opcode  dest  immediate
+Nop:
+	   do nothing
+	   format: 111	  0000   1
+			opcode empty  must be '1'
+
 
