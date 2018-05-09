@@ -34,6 +34,10 @@ intermediate_reg_tb: intermediate_reg_tb.o intermediate_reg.o dff.o
 	$(CC) -e $@
 	$(CC) -r $@ --vcd=$@.vcd
 
+controller_tb: controller_tb.o controller.o intermediate_reg.o dff.o
+	$(CC) -e $@
+	$(CC) -r $@ --vcd=$@.vcd
+
 clean:
 	rm *.o *_tb *.cf *.vcd
 
