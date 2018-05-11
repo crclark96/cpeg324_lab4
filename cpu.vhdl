@@ -264,7 +264,7 @@ begin  -- architecture str
 
   skip_en <= branch and not skip;
 
-  print_en <= enable_output(0) and not skip;
+  print_en <= not skip;
 
   imm_4 <= I(3 downto 0);
 
