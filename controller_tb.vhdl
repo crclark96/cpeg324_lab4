@@ -17,7 +17,8 @@ architecture behavioral of controller_tb is
          load          : out std_logic_vector(2 downto 0);
          offset        : out std_logic_vector(2 downto 0);
          compare       : out std_logic_vector(2 downto 0);
-         nop           : out std_logic_vector(2 downto 0)
+         nop           : out std_logic_vector(2 downto 0);
+         disp_out      : out std_logic_vector(2 downto 0)
          );
   end component;
 -- Specifies which entity is bound with the component
@@ -30,7 +31,8 @@ architecture behavioral of controller_tb is
     load_sig,
     offset_sig,
     compare_sig,
-    nop_sig : std_logic_vector(2 downto 0);
+    nop_sig,
+    disp_out_sig : std_logic_vector(2 downto 0);
 begin
 -- Component instantiation
   controller0 : controller port map(I             => I_sig,
@@ -42,7 +44,8 @@ begin
                                     load          => load_sig,
                                     offset        => offset_sig,
                                     compare       => compare_sig,
-                                    nop           => nop_sig);
+                                    nop           => nop_sig,
+                                    disp_out      => disp_out_sig);
 -- This process does the real job
   process
     type pattern_type is record
@@ -57,23 +60,24 @@ begin
         load_sig,
         offset_sig,
         compare_sig,
-        nop_sig : std_logic_vector(2 downto 0);
+        nop_sig,
+        disp_out_sig : std_logic_vector(2 downto 0);
     end record;
 -- The patterns to apply
     type pattern_array is array (natural range <>) of pattern_type;
     constant patterns : pattern_array :=
-      (("00000000", '0', "1UU", "0UU", "1UU", "0UU", "0UU", "0UU", "0UU", "0UU"),
-       ("00000000", '1', "11U", "00U", "11U", "00U", "00U", "00U", "00U", "00U"),
-       ("01000101", '0', "11U", "00U", "01U", "00U", "00U", "10U", "00U", "00U"),
-       ("01000101", '1', "111", "000", "001", "000", "000", "110", "000", "000"),
-       ("00000101", '0', "111", "000", "101", "000", "000", "110", "000", "000"),
-       ("00000101", '1', "111", "000", "110", "000", "000", "111", "000", "000"),
-       ("10110111", '0', "111", "100", "110", "000", "100", "111", "000", "000"),
-       ("10110111", '1', "111", "110", "111", "000", "110", "111", "000", "000"),
-       ("11001101", '0', "011", "110", "111", "000", "010", "111", "100", "000"),
-       ("11001101", '1', "001", "111", "111", "000", "001", "111", "110", "000"),
-       ("11111000", '0', "001", "111", "111", "100", "001", "011", "010", "000"),
-       ("11111000", '1', "000", "111", "111", "110", "000", "001", "001", "000")
+      (("00000000", '0', "1UU", "0UU", "1UU", "0UU", "0UU", "0UU", "0UU", "0UU", "0UU"),
+       ("00000000", '1', "11U", "00U", "11U", "00U", "00U", "00U", "00U", "00U", "00U"),
+       ("01000101", '0', "11U", "00U", "01U", "00U", "00U", "10U", "00U", "00U", "00U"),
+       ("01000101", '1', "111", "000", "001", "000", "000", "110", "000", "000", "000"),
+       ("00000101", '0', "111", "000", "101", "000", "000", "110", "000", "000", "000"),
+       ("00000101", '1', "111", "000", "110", "000", "000", "111", "000", "000", "000"),
+       ("10110111", '0', "111", "100", "110", "000", "100", "111", "000", "000", "100"),
+       ("10110111", '1', "111", "110", "111", "000", "110", "111", "000", "000", "110"),
+       ("11001101", '0', "011", "110", "111", "000", "010", "111", "100", "000", "010"),
+       ("11001101", '1', "001", "111", "111", "000", "001", "111", "110", "000", "001"),
+       ("11111000", '0', "001", "111", "111", "100", "001", "011", "010", "000", "101"),
+       ("11111000", '1', "000", "111", "111", "110", "000", "001", "001", "000", "110")
        );
 
   begin
@@ -101,6 +105,8 @@ begin
         report "bad output value compare" severity error;
       assert nop_sig = patterns(n).nop_sig
         report "bad output value nop" severity error;
+      assert disp_out_sig = patterns(n).disp_out_sig
+        report "bad output value disp_sig" severity error;
     end loop;
     assert false report "end of test" severity note;
 -- Wait forever; this will finish the simulation

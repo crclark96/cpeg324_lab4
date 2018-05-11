@@ -46,7 +46,8 @@ architecture str of cpu is
          load          : out std_logic_vector(2 downto 0);
          offset        : out std_logic_vector(2 downto 0);
          compare       : out std_logic_vector(2 downto 0);
-         nop           : out std_logic_vector(2 downto 0)
+         nop           : out std_logic_vector(2 downto 0);
+         disp_out      : out std_logic_vector(2 downto 0)
          );
   end component;
 
@@ -93,6 +94,17 @@ architecture str of cpu is
          );
   end component;
 
+  component mux_4_1
+    generic(N : integer);
+    port(in0    : in  std_logic_vector(N downto 0);
+         in1    : in  std_logic_vector(N downto 0);
+         in2    : in  std_logic_vector(N downto 0);
+         in3    : in  std_logic_vector(N downto 0);
+         switch : in  std_logic_vector(1 downto 0);
+         output : out std_logic_vector(N downto 0)
+         );
+  end component;
+
   component adder_8_bit
     port(a     : in  std_logic_vector(7 downto 0);
          b     : in  std_logic_vector(7 downto 0);
@@ -103,19 +115,27 @@ architecture str of cpu is
          );
   end component;
 
+  component intermediate_reg
+    generic(N : integer);
+    port(input  : in  std_logic_vector(N downto 0);
+         clk    : in  std_logic;
+         output : out std_logic_vector(N downto 0)
+         );
+  end component;
+
 
   -----------------------------------------------------------------------------
   -- Internal signal declarations
   -----------------------------------------------------------------------------
 
   signal mux_in, load, add_sub, enable_write, offset,
-    enable_output, compare, nop : std_logic_vector(2 downto 0);
+    enable_output, compare, nop, disp_out : std_logic_vector(2 downto 0);
 
-  signal r1, r2, d, r1_alu, r2_alu, r1_dsp, r2_dsp : std_logic_vector(1 downto 0);
+  signal r1_0, r1_1, r2_0, r2_1, d_0, d_1, d_2, r1_alu, r2_alu, r1_dsp, r2_dsp : std_logic_vector(1 downto 0);
 
-  signal w, v1, v2, imm_8, alu_out : std_logic_vector(7 downto 0);
+  signal w, v1_0, v1_1, v2, imm_8, alu_out_0, alu_out_1, print_in : std_logic_vector(7 downto 0);
 
-  signal reg_en, skip_en, print_en, skip : std_logic;
+  signal reg_en, skip_en, print_en, skip, branch, not_enable_write : std_logic;
 
   signal imm_4, skip_amount : std_logic_vector(3 downto 0);
 
@@ -133,16 +153,17 @@ begin  -- architecture str
                                     load          => load,
                                     offset        => offset,
                                     compare       => compare,
-                                    nop           => nop
+                                    nop           => nop,
+                                    disp_out      => disp_out
                                     );
 
-  reg_file0 : reg_file port map(r1     => r1,
-                                r2     => r2,
-                                d      => d,
+  reg_file0 : reg_file port map(r1     => r1_1,
+                                r2     => r2_1,
+                                d      => d_2,
                                 w      => w,
                                 clk    => clk,
                                 enable => reg_en,
-                                v1     => v1,
+                                v1     => v1_0,
                                 v2     => v2
                                 );
 
@@ -156,7 +177,7 @@ begin  -- architecture str
                                                 skip        => skip
                                                 );
 
-  print_module0 : print_module port map(input  => v1,
+  print_module0 : print_module port map(input  => print_in,
                                         enable => print_en,
                                         clk    => clk,
                                         output => O
@@ -166,27 +187,27 @@ begin  -- architecture str
     port map(in0    => r1_alu,
              in1    => r1_dsp,
              switch => mux_in(2),
-             output => r1
+             output => r1_0
              );
 
   mux_1 : mux_2_1 generic map(N => 1)
     port map(in0    => r2_alu,
              in1    => r2_dsp,
              switch => mux_in(2),
-             output => r2
+             output => r2_0
              );
 
   mux_2 : mux_2_1 generic map(N => 7)
-    port map(in0    => alu_out,
+    port map(in0    => alu_out_1,
              in1    => imm_8,
              switch => load(0),
              output => w
              );
 
-  alu0 : adder_8_bit port map(a   => v1,
+  alu0 : adder_8_bit port map(a   => v1_0,
                               b   => v2,
                               sub => add_sub(1),
-                              s   => alu_out
+                              s   => alu_out_0
                               );
 
   mux_3 : mux_2_1 generic map(N => 3)
@@ -196,15 +217,52 @@ begin  -- architecture str
              output => skip_amount
              );
 
+  mux_4 : mux_4_1 generic map(N => 7)
+    port map(in0             => alu_out_1,
+             in1(0)          => branch,
+             in1(7 downto 1) => "0000000",
+             in2             => imm_8,
+             in3             => v1_1,
+             switch(0)       => disp_out(0),
+             switch(1)       => not_enable_write,
+             output          => print_in
+             );
+
+  inter_reg_id_ex : intermediate_reg generic map(N => 5)
+    port map(input(5 downto 4) => r1_0,
+             input(3 downto 2)  => r2_0,
+             input(1 downto 0)   => d_0,
+             clk => clk,
+             output(5 downto 4) => r1_1,
+             output(3 downto 2)  => r2_1,
+             output(1 downto 0)   => d_1
+             );
+
+  inter_reg_ex_wb : intermediate_reg generic map(N => 17)
+    port map(input(17 downto 10) => v1_0,
+             input(9 downto 2) => alu_out_0,
+             input(1 downto 0) => d_1,
+             clk => clk,
+             output(17 downto 10) => v1_1,
+             output(9 downto 2) => alu_out_1,
+             output(1 downto 0) => d_2
+             );
+
+  
+  not_enable_write <= not enable_write(0);
+
   reg_en <= enable_write(0) and nop(0) and not skip;
-  skip_en <= (not(alu_out(7) or
-                  alu_out(6) or
-                  alu_out(5) or
-                  alu_out(4) or
-                  alu_out(3) or
-                  alu_out(2) or
-                  alu_out(1) or
-                  alu_out(0)) and compare(0)) and not skip;
+
+  branch <= (not(alu_out_1(7) or
+                 alu_out_1(6) or
+                 alu_out_1(5) or
+                 alu_out_1(4) or
+                 alu_out_1(3) or
+                 alu_out_1(2) or
+                 alu_out_1(1) or
+                 alu_out_1(0)) and compare(0));
+
+  skip_en <= branch and not skip;
 
   print_en <= enable_output(0) and not skip;
 
@@ -216,8 +274,8 @@ begin  -- architecture str
   r1_dsp <= I(4 downto 3);
   r2_dsp <= I(2 downto 1);
 
-  d <= I(5 downto 4);
-  
+  d_0 <= I(5 downto 4);
+
 end architecture str;
 
 -------------------------------------------------------------------------------

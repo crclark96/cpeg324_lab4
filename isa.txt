@@ -30,11 +30,11 @@ Compare:
                                             1->2 instructions)
 Load:
         load a four bit signed, twos complement immediate into a register
-	   format: 10      00    0000
+	format: 10      00    0000
                 opcode  dest  immediate
 Nop:
-	   do nothing
-	   format: 111	  0000   1
-			opcode empty  must be '1'
+	do nothing
+	format: 111     0000   1
+         	opcode  empty  must be '1'
 
 

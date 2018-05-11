@@ -6,7 +6,7 @@
 -- Author     : Collin Clark  <collinclark@Collins-MacBook-Pro.local>
 -- Company    : 
 -- Created    : 2018-04-22
--- Last update: 2018-05-09
+-- Last update: 2018-05-11
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -36,7 +36,8 @@ entity controller is
     load          : out std_logic_vector(2 downto 0);
     offset        : out std_logic_vector(2 downto 0);
     compare       : out std_logic_vector(2 downto 0);
-    nop           : out std_logic_vector(2 downto 0)
+    nop           : out std_logic_vector(2 downto 0);
+    disp_out      : out std_logic_vector(2 downto 0)
     );
 
 end entity controller;
@@ -45,7 +46,7 @@ end entity controller;
 
 architecture str of controller is
   component intermediate_reg
-    generic(N : integer:=7);
+    generic(N : integer:=8);
     port(input : in std_logic_vector(N downto 0);
          clk : in std_logic;
          output : out std_logic_vector(N downto 0)
@@ -60,6 +61,7 @@ signal    load_sig          :  std_logic_vector(2 downto 0);
 signal    offset_sig        :  std_logic_vector(2 downto 0);
 signal    compare_sig       :  std_logic_vector(2 downto 0);
 signal    nop_sig           :  std_logic_vector(2 downto 0);
+signal    disp_out_sig      :  std_logic_vector(2 downto 0);
   
 begin  -- architecture str
 
@@ -71,6 +73,7 @@ begin  -- architecture str
   offset_sig(2)        <= I(0);
   compare_sig(2)       <= I(7) and I(6) and not I(5);
   nop_sig(2)           <= I(7) and I(6) and I(5) and I(0);
+  disp_out_sig(2)      <= (I(7) and I(6) and I(5)) or (I(7) and not I(6));
 
   INT_REGS :
   for i in 1 downto 0 generate
@@ -83,6 +86,7 @@ begin  -- architecture str
       input(5) => offset_sig(i+1),
       input(6) => compare_sig(i+1),
       input(7) => nop_sig(i+1),
+      input(8) => disp_out_sig(i+1),
       clk => clk,
       output(0) => enable_write_sig(i),
       output(1) => mux_in_sig(i),
@@ -91,7 +95,8 @@ begin  -- architecture str
       output(4) => load_sig(i),
       output(5) => offset_sig(i),
       output(6) => compare_sig(i),
-      output(7) => nop_sig(i)
+      output(7) => nop_sig(i),
+      output(8) => disp_out_sig(i)
       );
   end generate INT_REGS;
 
@@ -103,6 +108,7 @@ begin  -- architecture str
   offset <= offset_sig;
   compare <= compare_sig;
   nop <= nop_sig;
+  disp_out <= disp_out_sig;
 
   
 end architecture str;
