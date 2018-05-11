@@ -6,7 +6,7 @@
 -- Author     : Collin Clark  <collinclark@Collins-MacBook-Pro.local>
 -- Company    : 
 -- Created    : 2018-04-24
--- Last update: 2018-04-28
+-- Last update: 2018-05-11
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -39,13 +39,14 @@ architecture str of cpu is
 
   component controller
     port(I             : in  std_logic_vector(7 downto 0);
-         enable_write  : out std_logic;
-         mux_in        : out std_logic;
-         add_sub       : out std_logic;
-         enable_output : out std_logic;
-         load          : out std_logic;
-         offset        : out std_logic;
-         compare       : out std_logic
+         enable_write  : out std_logic_vector(2 downto 0);
+         mux_in        : out std_logic_vector(2 downto 0);
+         add_sub       : out std_logic_vector(2 downto 0);
+         enable_output : out std_logic_vector(2 downto 0);
+         load          : out std_logic_vector(2 downto 0);
+         offset        : out std_logic_vector(2 downto 0);
+         compare       : out std_logic_vector(2 downto 0);
+         nop           : out std_logic_vector(2 downto 0)
          );
   end component;
 
@@ -108,13 +109,13 @@ architecture str of cpu is
   -----------------------------------------------------------------------------
 
   signal mux_in, load, add_sub, enable_write, offset,
-    enable_output, skip, compare : std_logic;
+    enable_output, compare, nop : std_logic_vector(2 downto 0);
 
   signal r1, r2, d, r1_alu, r2_alu, r1_dsp, r2_dsp : std_logic_vector(1 downto 0);
 
   signal w, v1, v2, imm_8, alu_out : std_logic_vector(7 downto 0);
 
-  signal reg_en, skip_en, print_en : std_logic;
+  signal reg_en, skip_en, print_en, skip : std_logic;
 
   signal imm_4, skip_amount : std_logic_vector(3 downto 0);
 
@@ -131,7 +132,8 @@ begin  -- architecture str
                                     enable_output => enable_output,
                                     load          => load,
                                     offset        => offset,
-                                    compare       => compare
+                                    compare       => compare,
+                                    nop           => nop
                                     );
 
   reg_file0 : reg_file port map(r1     => r1,
@@ -163,38 +165,38 @@ begin  -- architecture str
   mux_0 : mux_2_1 generic map(N => 1)
     port map(in0    => r1_alu,
              in1    => r1_dsp,
-             switch => mux_in,
+             switch => mux_in(2),
              output => r1
              );
 
   mux_1 : mux_2_1 generic map(N => 1)
     port map(in0    => r2_alu,
              in1    => r2_dsp,
-             switch => mux_in,
+             switch => mux_in(2),
              output => r2
              );
 
   mux_2 : mux_2_1 generic map(N => 7)
     port map(in0    => alu_out,
              in1    => imm_8,
-             switch => load,
+             switch => load(0),
              output => w
              );
 
   alu0 : adder_8_bit port map(a   => v1,
                               b   => v2,
-                              sub => add_sub,
+                              sub => add_sub(1),
                               s   => alu_out
                               );
 
   mux_3 : mux_2_1 generic map(N => 3)
     port map(in0    => "0001",
              in1    => "0010",
-             switch => offset,
+             switch => offset(0),
              output => skip_amount
              );
 
-  reg_en <= enable_write and not skip;
+  reg_en <= enable_write(0) and nop(0) and not skip;
   skip_en <= (not(alu_out(7) or
                   alu_out(6) or
                   alu_out(5) or
@@ -202,9 +204,9 @@ begin  -- architecture str
                   alu_out(3) or
                   alu_out(2) or
                   alu_out(1) or
-                  alu_out(0)) and compare) and not skip;
+                  alu_out(0)) and compare(0)) and not skip;
 
-  print_en <= enable_output and not skip;
+  print_en <= enable_output(0) and not skip;
 
   imm_4 <= I(3 downto 0);
 
