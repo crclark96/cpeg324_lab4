@@ -6,7 +6,7 @@
 -- Author     : Collin Clark  <collinclark@wifi-roaming-128-4-159-135.host.udel.edu>
 -- Company    : 
 -- Created    : 2018-04-09
--- Last update: 2018-04-28
+-- Last update: 2018-05-11
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -30,6 +30,7 @@ entity print_module is
   port (
     input : in std_logic_vector(7 downto 0);
     enable : in std_logic;
+    nop : in std_logic;
     clk : in std_logic;
     output : out std_logic_vector(7 downto 0)
     );
@@ -52,8 +53,13 @@ begin  -- architecture str
   begin
     if rising_edge(clk) then
       if (enable = '1') then
-        report "value: " & integer'image(num);
-        output <= input;
+        if (nop = '1') then
+          report "nop";
+          output <= "00000000";
+        else
+          report "value: " & integer'image(num);
+          output <= input;
+        end if;
       else
         output <= "00000000";
       end if;
