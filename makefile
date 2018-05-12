@@ -38,6 +38,10 @@ controller_tb: controller_tb.o controller.o intermediate_reg.o dff.o
 	$(CC) -e $@
 	$(CC) -r $@ --vcd=$@.vcd
 
+forwarding_controller_tb: forwarding_controller_tb.o forwarding_controller.o intermediate_reg.o dff.o comparator_2_bit.o mux_2_1.o
+	$(CC) -e $@
+	$(CC) -r $@ --vcd=$@.vcd
+
 clean:
 	rm *.o *_tb *.cf *.vcd
 
