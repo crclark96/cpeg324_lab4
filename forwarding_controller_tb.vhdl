@@ -112,6 +112,7 @@ begin
        ("11100001", '0', '0', '0', '0', '0'),
        ("11100001", '1', '0', '0', '0', '0')
        );
+    begin
 -- Check each pattern    
     for n in patterns'range loop
 -- Set the inputs      
