@@ -6,7 +6,7 @@
 -- Author     : Collin Clark  <collinclark@Collins-MacBook-Pro.local>
 -- Company    : 
 -- Created    : 2018-04-24
--- Last update: 2018-05-11
+-- Last update: 2018-05-15
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -80,6 +80,7 @@ architecture str of cpu is
   component print_module
     port(input  : in  std_logic_vector(7 downto 0);
          enable : in  std_logic;
+         nop    : in  std_logic;
          clk    : in  std_logic;
          output : out std_logic_vector(7 downto 0)
          );
@@ -123,6 +124,14 @@ architecture str of cpu is
          );
   end component;
 
+  component forwarding_controller
+    port(I : in std_logic_vector(7 downto 0);
+         clk : in std_logic;
+         v1_mux : out std_logic_vector(1 downto 0);
+         v2_mux : out std_logic_vector(1 downto 0)
+         );
+  end component;
+  
 
   -----------------------------------------------------------------------------
   -- Internal signal declarations
@@ -131,9 +140,11 @@ architecture str of cpu is
   signal mux_in, load, add_sub, enable_write, offset,
     enable_output, compare, nop, disp_out : std_logic_vector(2 downto 0);
 
-  signal r1_0, r1_1, r2_0, r2_1, d_0, d_1, d_2, r1_alu, r2_alu, r1_dsp, r2_dsp : std_logic_vector(1 downto 0);
+  signal r1_0, r1_1, r2_0, r2_1, d_0, d_1, d_2, mux_5_switch, mux_6_switch,
+    r1_alu, r2_alu, r1_dsp, r2_dsp, v1_mux, v2_mux : std_logic_vector(1 downto 0);
 
-  signal w, v1_0, v1_1, v2, imm_8, alu_out_0, alu_out_1, print_in : std_logic_vector(7 downto 0);
+  signal w, v1_0, v1_1, v2, imm_8_0, imm_8_1, imm_8_2, alu_out_0,
+    alu_out_1, print_in, new_v1, new_v2 : std_logic_vector(7 downto 0);
 
   signal reg_en, skip_en, print_en, skip, branch, not_enable_write : std_logic;
 
@@ -157,6 +168,12 @@ begin  -- architecture str
                                     disp_out      => disp_out
                                     );
 
+  forwarding_controller0 : forwarding_controller port map(I => I,
+                                                          clk => clk,
+                                                          v1_mux => v1_mux,
+                                                          v2_mux => v2_mux
+                                                          );
+
   reg_file0 : reg_file port map(r1     => r1_1,
                                 r2     => r2_1,
                                 d      => d_2,
@@ -168,7 +185,7 @@ begin  -- architecture str
                                 );
 
   sign_extend0 : sign_extend port map(imm_4 => imm_4,
-                                      imm_8 => imm_8
+                                      imm_8 => imm_8_0
                                       );
 
   instruction_skip0 : instruction_skip port map(skip_amount => skip_amount,
@@ -179,6 +196,7 @@ begin  -- architecture str
 
   print_module0 : print_module port map(input  => print_in,
                                         enable => print_en,
+                                        nop    => nop(2),
                                         clk    => clk,
                                         output => O
                                         );
@@ -199,13 +217,13 @@ begin  -- architecture str
 
   mux_2 : mux_2_1 generic map(N => 7)
     port map(in0    => alu_out_1,
-             in1    => imm_8,
+             in1    => imm_8_2,
              switch => load(0),
              output => w
              );
 
-  alu0 : adder_8_bit port map(a   => v1_0,
-                              b   => v2,
+  alu0 : adder_8_bit port map(a   => new_v1,
+                              b   => new_v2,
                               sub => add_sub(1),
                               s   => alu_out_0
                               );
@@ -221,34 +239,60 @@ begin  -- architecture str
     port map(in0             => alu_out_1,
              in1(0)          => branch,
              in1(7 downto 1) => "0000000",
-             in2             => imm_8,
+             in2             => imm_8_2,
              in3             => v1_1,
              switch(0)       => disp_out(0),
              switch(1)       => not_enable_write,
              output          => print_in
              );
 
-  inter_reg_id_ex : intermediate_reg generic map(N => 5)
-    port map(input(5 downto 4) => r1_0,
+  mux_5 : mux_4_1 generic map(N => 7)
+    port map(in0 => v1_0,
+             in1 => alu_out_1,
+             in2 => imm_8_2,
+             in3 => "UUUUUUUU",
+             switch => mux_5_switch,
+             output => new_v1      
+      );
+
+  mux_6 : mux_4_1 generic map(N => 7)
+    port map(in0 => v2,
+             in1 => alu_out_1,
+             in2 => imm_8_2,
+             in3 => "UUUUUUUU",
+             switch => mux_6_switch,
+             output => new_v2
+      );
+
+  inter_reg_id_ex : intermediate_reg generic map(N => 13)
+    port map(input(13 downto 6) => imm_8_0,
+             input(5 downto 4) => r1_0,
              input(3 downto 2)  => r2_0,
              input(1 downto 0)   => d_0,
              clk => clk,
+             output(13 downto 6) => imm_8_1,
              output(5 downto 4) => r1_1,
              output(3 downto 2)  => r2_1,
              output(1 downto 0)   => d_1
              );
 
-  inter_reg_ex_wb : intermediate_reg generic map(N => 17)
-    port map(input(17 downto 10) => v1_0,
+  inter_reg_ex_wb : intermediate_reg generic map(N => 25)
+    port map(input(25 downto 18) => imm_8_1,
+             input(17 downto 10) => v1_0,
              input(9 downto 2) => alu_out_0,
              input(1 downto 0) => d_1,
              clk => clk,
+             output(25 downto 18) => imm_8_2,
              output(17 downto 10) => v1_1,
              output(9 downto 2) => alu_out_1,
              output(1 downto 0) => d_2
              );
 
-  
+  mux_5_switch(1) <= v1_mux(1) and not skip;
+  mux_5_switch(0) <= v1_mux(0) and not skip;
+  mux_6_switch(1) <= v2_mux(1) and not skip;
+  mux_6_switch(0) <= v2_mux(0) and not skip;
+    
   not_enable_write <= not enable_write(0);
 
   reg_en <= enable_write(0) and nop(0) and not skip;
