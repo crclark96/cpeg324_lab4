@@ -39,6 +39,7 @@ architecture str of cpu is
 
   component controller
     port(I             : in  std_logic_vector(7 downto 0);
+         clk           : in  std_logic;
          enable_write  : out std_logic_vector(2 downto 0);
          mux_in        : out std_logic_vector(2 downto 0);
          add_sub       : out std_logic_vector(2 downto 0);
@@ -157,6 +158,7 @@ begin  -- architecture str
   -----------------------------------------------------------------------------
 
   controller0 : controller port map(I             => I,
+                                    clk           => clk,
                                     enable_write  => enable_write,
                                     mux_in        => mux_in,
                                     add_sub       => add_sub,
