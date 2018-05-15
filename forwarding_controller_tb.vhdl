@@ -39,9 +39,9 @@ begin
     type pattern_array is array (natural range <>) of pattern_type;
     constant patterns : pattern_array :=
       (("10000001", '0', "UU", "UU"),  -- asm code corresponds to
-                             -- results being displayed
-       ("10000001", '1', "UU", "UU"),  -- load $0 1     
-       ("10010001", '0', "UU", "UU"),                   
+                                       -- results being displayed
+       ("10000001", '1', "00", "00"),  -- load $0 1     
+       ("10010001", '0', "00", "00"),                   
        ("10010001", '1', "00", "00"),  -- load $1 1     
        ("10101111", '0', "00", "00"),                   
        ("10101111", '1', "00", "00"),  -- load $2 -1    
