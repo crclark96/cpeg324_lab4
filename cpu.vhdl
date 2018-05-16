@@ -243,8 +243,8 @@ begin  -- architecture str
              in1(7 downto 1) => "0000000",
              in2             => imm_8_2,
              in3             => v1_1,
-             switch(0)       => disp_out(0),
-             switch(1)       => not_enable_write,
+             switch(0)       => not_enable_write,
+             switch(1)       => disp_out(0),
              output          => print_in
              );
 
@@ -280,7 +280,7 @@ begin  -- architecture str
 
   inter_reg_ex_wb : intermediate_reg generic map(N => 25)
     port map(input(25 downto 18) => imm_8_1,
-             input(17 downto 10) => v1_0,
+             input(17 downto 10) => new_v1,
              input(9 downto 2) => alu_out_0,
              input(1 downto 0) => d_1,
              clk => clk,
@@ -297,7 +297,7 @@ begin  -- architecture str
     
   not_enable_write <= not enable_write(0);
 
-  reg_en <= enable_write(0) and nop(0) and not skip;
+  reg_en <= enable_write(0) and not nop(0) and not skip;
 
   branch <= (not(alu_out_1(7) or
                  alu_out_1(6) or
