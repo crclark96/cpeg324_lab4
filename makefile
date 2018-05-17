@@ -3,7 +3,7 @@ DEPS = reg_file.o shift_reg_8_bit.o shift_reg.o dff.o mux_4_1.o cpu.o controller
 
 default: cpu_load_tb cpu_sub_tb cpu_add_tb cpu_comp_tb
 
-all: controller_tb cpu_add_tb cpu_comp_tb cpu_load_tb cpu_sub_tb demux_1_4_tb instruction_skip_tb print_module_tb reg_file_tb shift_reg_8_bit_tb shift_reg_tb sign_extend_tb forwarding_controller_tb
+all: controller_tb cpu_add_tb cpu_comp_tb cpu_load_tb cpu_sub_tb demux_1_4_tb instruction_skip_tb print_module_tb reg_file_tb shift_reg_8_bit_tb shift_reg_tb sign_extend_tb forwarding_controller_tb comparator_2_bit_tb
 
 %.o: %.vhdl
 	$(CC) -a $^
