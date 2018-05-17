@@ -1,5 +1,5 @@
 CC = /usr/local/bin/ghdl
-DEPS = reg_file.o shift_reg_8_bit.o shift_reg.o dff.o mux_4_1.o cpu.o controller.o demux_1_4.o sign_extend.o instruction_skip.o print_module.o mux_2_1.o adder_8_bit.o full_adder.o forwarding_controller.o
+DEPS = reg_file.o shift_reg_8_bit.o shift_reg.o dff.o mux_4_1.o cpu.o controller.o demux_1_4.o sign_extend.o instruction_skip.o print_module.o mux_2_1.o adder_8_bit.o full_adder.o forwarding_controller.o intermediate_reg.o comparator_2_bit.o
 
 default: cpu_load_tb cpu_sub_tb cpu_add_tb cpu_comp_tb
 
@@ -38,7 +38,7 @@ controller_tb: controller_tb.o controller.o intermediate_reg.o dff.o
 	$(CC) -e $@
 	$(CC) -r $@ --vcd=$@.vcd
 
-forwarding_controller_tb: forwarding_controller_tb.o forwarding_controller.o intermediate_reg.o dff.o comparator_2_bit.o mux_2_1.o
+forwarding_controller_tb: forwarding_controller_tb.o forwarding_controller.o intermediate_reg.o dff.o comparator_2_bit.o mux_2_1.o comparator_2_bit.o
 	$(CC) -e $@
 	$(CC) -r $@ --vcd=$@.vcd
 
