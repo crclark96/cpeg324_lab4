@@ -6,7 +6,7 @@
 -- Author     : Collin Clark  <collinclark@Collins-MacBook-Pro.local>
 -- Company    : 
 -- Created    : 2018-04-24
--- Last update: 2018-05-15
+-- Last update: 2018-05-16
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -198,7 +198,7 @@ begin  -- architecture str
 
   print_module0 : print_module port map(input  => print_in,
                                         enable => print_en,
-                                        nop    => nop(2),
+                                        nop    => nop(0),
                                         clk    => clk,
                                         output => O
                                         );

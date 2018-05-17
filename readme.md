@@ -1,4 +1,4 @@
-# lab 3
+# lab 4
 ## collin clark, zach irons
 
 ### makefile

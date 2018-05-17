@@ -41,10 +41,10 @@ begin
 -- The patterns to apply
     type pattern_array is array (natural range <>) of pattern_type;
     constant patterns : pattern_array :=
-      (("10101010", "00", "10101010", "UUUUUUUU", "UUUUUUUU", "UUUUUUUU"),
-       ("10101010", "01", "UUUUUUUU", "10101010", "UUUUUUUU", "UUUUUUUU"),
-       ("10101010", "10", "UUUUUUUU", "UUUUUUUU", "10101010", "UUUUUUUU"),
-       ("10101010", "11", "UUUUUUUU", "UUUUUUUU", "UUUUUUUU", "10101010"));
+      (("10101010", "00", "10101010", "00000000", "00000000", "00000000"),
+       ("10101010", "01", "00000000", "10101010", "00000000", "00000000"),
+       ("10101010", "10", "00000000", "00000000", "10101010", "00000000"),
+       ("10101010", "11", "00000000", "00000000", "00000000", "10101010"));
   begin
 -- Check each pattern    
     for n in patterns'range loop
