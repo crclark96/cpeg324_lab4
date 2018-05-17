@@ -6,7 +6,7 @@
 -- Author     : Collin Clark  <collinclark@wifi-roaming-128-4-153-139.host.udel.edu>
 -- Company    : 
 -- Created    : 2018-04-15
--- Last update: 2018-04-28
+-- Last update: 2018-05-16
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -35,6 +35,7 @@ architecture str of print_module_tb is
     port(input : in std_logic_vector (7 downto 0);
          enable: in std_logic;
          clk : in std_logic;
+         nop : in std_logic;
 	 output: out std_logic_vector (7 downto 0)
          );
   end component;
@@ -51,6 +52,7 @@ begin  -- architecture str
   print_mod : print_module port map(enable => en,
                                     input => inp,
                                     clk => clk,
+                                    nop => '0',
 				    output => output);
 
   process
